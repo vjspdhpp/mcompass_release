@@ -28,5 +28,6 @@ PlatformIO的安装方式请自行搜索;
 * 在室外开阔环境下才能够有GPS信号, 没有GPS信号指针会乱转的.
 * 在有GPS信号的情况下, 长按按钮可以设置当前地点为新的出生点.
 
+
 ## 参考资料
 [使用GPS坐标来计算距离和方位角 by 蓝色的飘漂](https://johnnyqian.net/blog/gps-locator.html)

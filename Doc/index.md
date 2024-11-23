@@ -14,8 +14,8 @@ hero:
       text: API一览
       link: /api
     - theme: alt
-      text: PCB
-      link: /pcb
+      text: 制作
+      link: /make
 
 features:
   - title: 开源

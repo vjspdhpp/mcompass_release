@@ -42,7 +42,17 @@ path | 类型 |描述 | 参数
 /setAzimuth | POST | 设置方位角, Mod用的就是这个接口 | azimuth: Float
 /setWiFi | POST | 设置WiFi | ssid: String, password: String
 
+## 材料说明
+* PCB板厚选择1.0mm, 黑色;
+* 面板选择1.0mm 半透黑色亚克力,无需背胶;
+* 匀光材料选择PET LGT075J,无需背胶;
+* 电池选择 213455 500MAH
+* 滚花螺母 M2*3*3.2
+* 螺丝 M2*4 内六角
 
+## 模型
+[MakerWorld](https://makerworld.com.cn/zh/models/667420#profileId-611642)
+![MakerWorld CN](./Doc/public/makerworldcn.jpg)
 
 ## 参考资料
 [使用GPS坐标来计算距离和方位角 by 蓝色的飘漂](https://johnnyqian.net/blog/gps-locator.html)
