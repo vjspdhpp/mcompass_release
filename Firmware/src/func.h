@@ -1,0 +1,105 @@
+#pragma once
+
+/// 函数声明
+/**
+ * @brief 保存目标位置
+ */
+void saveHomeLocation(float latitude, float longitude);
+/**
+ * @brief 获取目标位置
+ */
+void getHomeLocation(float &latitude, float &longitude);
+/**
+ * @brief 计算方位角
+ * @param latA 目标位置纬度
+ * @param lonA 目标位置经度
+ * @param latB 当前位置纬度
+ * @param lonB 当前位置经度
+ * @return 方位角
+ */
+// float calculateBearing(float latA, float lonA, float latB, float lonB);
+double calculateBearing(double lat1, double lon1, double lat2, double lon2);
+double complexDistance(double lat1, double lon1, double lat2, double lon2);
+
+double simplifiedDistance(double lat1, double lon1, double lat2, double lon2);
+
+/**
+ * @brief 校准罗盘
+ */
+void calibrateCompass();
+/**
+ * @brief 显示任务
+ */
+void displayTask(void *pvParameters);
+/**
+ * @brief 位置任务
+ */
+void locationTask(void *pvParameters);
+/**
+ * @brief 丢失方位
+ */
+void lostBearing();
+/**
+ * @brief 地狱, 无GPS信号
+ */
+void theNether();
+/**
+ * @brief 显示帧
+ * @param index 帧索引
+ */
+void showFrame(int index);
+/**
+ * @brief 根据方位角显示帧
+ * @param azimuth 方位角 范围应当是0~360
+ */
+void showFrameByAzimuth(float azimuth);
+/**
+ * @brief 根据方位角显示帧
+ * @param bearing 方位角
+ * @param azimuth 当前罗盘方位角
+ */
+void showFrameByBearing(float bearing, int azimuth);
+/**
+ * @brief 根据位置显示帧
+ * @param latitudeA 目标位置纬度
+ * @param longitudeA 目标位置经度
+ * @param latitudeB 当前位置纬度
+ * @param longitudeB 当前位置经度
+ * @param azimuth 当前罗盘方位角
+ */
+void showFrameByLocation(float latA, float lonA, float latB, float lonB,
+                         int azimuth);
+/**
+ * @brief 热点
+ */
+void showHotspot();
+
+/**
+ * @brief 显示纯色
+ * @param color 颜色
+ */
+void showSolid(int color);
+/**
+ * @brief 连接WiFi
+ */
+void showConnectingWifi();
+/**
+ * @brief 服务器颜色
+ */
+void showServerColors();
+/**
+ * @brief 服务器WiFi
+ */
+void showServerWifi();
+/**
+ * @brief 服务器生成
+ */
+void showServerSpawn();
+/**
+ * @brief 服务器信息
+ */
+void showServerInfo();
+/**
+ * @brief 初始化服务器相关
+ */
+void setupServer();

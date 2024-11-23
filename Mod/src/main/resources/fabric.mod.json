@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "real_compass",
+  "version": "${version}",
+  "name": "real_compass",
+  "description": "This is description",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/real_compass/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.chaosgoo.client.CompassClient"
+    ],
+    "main": [
+      "com.chaosgoo.Compass"
+    ]
+  },
+  "mixins": [
+    "real_compass.mixins.json",
+    {
+      "config": "real_compass.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${kotlin_loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
