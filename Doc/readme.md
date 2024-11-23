@@ -1,9 +1,9 @@
+---
+nextPage: /api
+---
 # 一个现实世界中的Minecraft罗盘
-![Index](./Doc/public/MCompass.png)
+![Index](./public/MCompass.png)
 
-Front|Bottom
--|-
-![Front](./Doc/public/FrontPCB.png)|![Bottom](./Doc/public/BottomPCB.png)
 
 ## 声明
 * **Minecraft游戏素材版权均归微软所有**, 所以本项目不提供游戏中罗盘的图片素材
@@ -27,22 +27,6 @@ PlatformIO的安装方式请自行搜索;
 * 开机后显示彩虹图案时按住按钮会进入罗盘校准模式, 请举着罗盘飞来飞去, 尽可能多的让罗盘在各个方向旋转.
 * 在室外开阔环境下才能够有GPS信号, 没有GPS信号指针会乱转的.
 * 在有GPS信号的情况下, 长按按钮可以设置当前地点为新的出生点.
-
-## API
-path | 类型 |描述 | 参数
--|-|-|-
-/ip | GET | 获取当前设备IP | 无
-/setIndex | POST |调试用, 直接显示第N帧 | index: Int
-/info | GET |获取设备基本信息 | 无
-/wifi | GET |获取设备保存的WiFi | 无
-/wifi | GET |获取设备保存的WiFi | 无
-/spawn | GET |获取当前出生点 | 无
-/spawn | POST |设置当前出生点 | latitude:Float,longitude:Float
-/setColor | POST |调试用,所有灯珠显示该颜色 | color: String, eg: #ff5252
-/setAzimuth | POST | 设置方位角, Mod用的就是这个接口 | azimuth: Float
-/setWiFi | POST | 设置WiFi | ssid: String, password: String
-
-
 
 ## 参考资料
 [使用GPS坐标来计算距离和方位角 by 蓝色的飘漂](https://johnnyqian.net/blog/gps-locator.html)
