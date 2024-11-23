@@ -54,5 +54,8 @@ path | 类型 |描述 | 参数
 [MakerWorld](https://makerworld.com.cn/zh/models/667420#profileId-611642)
 ![MakerWorld CN](./Doc/public/makerworldcn.jpg)
 
+## PCB工程及面板文件
+[PCB工程文件和面板](https://oshwhub.com/chaosgoo/wcompass)
+
 ## 参考资料
 [使用GPS坐标来计算距离和方位角 by 蓝色的飘漂](https://johnnyqian.net/blog/gps-locator.html)

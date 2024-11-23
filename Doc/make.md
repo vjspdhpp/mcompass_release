@@ -1,10 +1,13 @@
 # 制作
 
+
 ## 模型
 [MakerWorld CN](https://makerworld.com.cn/zh/models/667420#profileId-611642)
 ![MakerWorld CN](./public/makerworldcn.jpg)
 
 ## PCB
+
+[PCB工程文件和面板](https://oshwhub.com/chaosgoo/wcompass)
 
 ![Front](./public/FrontPCB.png)
 
