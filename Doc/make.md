@@ -1,5 +1,7 @@
 # 制作
 
+## 源码
+[Github](https://github.com/chaosgoo/mcompass)
 
 ## 模型
 [MakerWorld CN](https://makerworld.com.cn/zh/models/667420#profileId-611642)
