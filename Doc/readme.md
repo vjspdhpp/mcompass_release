@@ -12,6 +12,15 @@ nextPage: /api
     * PCB背面丝印的标准银河字母字体版权不明确. 如果有任何借此项目进行商业的行为, **请删除背面标准银河字母**
 
 ## 编译说明
+
+### 不会编译
+仓库已添加Github Actions, 可以直接点击[Actions](https://github.com/chaosgoo/mcompass/actions)找到最近一次的"Build Firmware Workflow"构建成功的记录,
+
+点击后的页面下方有个类似于"mcompass-639b762"的文件, 下载后解压文件得到**mcompass.bin**文件使用**Flash Download Tool**选择ESP32C3->USB下载固件.
+
+固件已将`bootload.bin, partitions.bin, firmware.bin, littlefs.bin`合并, 直接烧录到地址0x0即可, 其余参数保持默认, SPI SPEED:40Mhz;SPI MODE:DIO
+
+### 手动编译
 固件使用PlatformIO平台Arduino框架编写, 已将依赖库迁移至本地lib文件夹下.
 PlatformIO的安装方式请自行搜索;
 
