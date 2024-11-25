@@ -15,7 +15,7 @@ Front|Bottom
 固件使用PlatformIO平台Arduino框架编写, 已将依赖库迁移至本地lib文件夹下.
 PlatformIO的安装方式请自行搜索;
 
-`Fimware/assets`文件夹内附带了一个**extract_pixels.py**脚本, 会检测`Fimware/assets`文件夹内`compass{id}.bmp`的10x5图像, 根据LED灯珠排布取模,生成对应的头文件.
+`Firmware/assets`文件夹内附带了一个**extract_pixels.py**脚本, 会检测`Firmware/assets`文件夹内`compass{id}.bmp`的10x5图像, 根据LED灯珠排布取模,生成对应的头文件.
 
 服务端程序使用next.js. 安装好node.js后,进入Server文件夹执行`npm i`安装依赖.
 
