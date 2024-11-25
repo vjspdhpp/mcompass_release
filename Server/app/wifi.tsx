@@ -29,7 +29,7 @@ export default function WiFiPanel() {
     }
 
     function saveWiFi() {
-        fetch(`/wifi?ssid=${encodeURIComponent(ssid)}&password=${encodeURIComponent(password)}`, {
+        fetch(`/setWiFi?ssid=${encodeURIComponent(ssid)}&password=${encodeURIComponent(password)}`, {
             method: "POST"
         });
     }
