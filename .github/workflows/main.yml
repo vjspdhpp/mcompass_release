@@ -40,10 +40,11 @@ jobs:
           0x10000 ./Firmware/.pio/build/airm2m_core_esp32c3/firmware.bin \
           0x210000 ./Firmware/.pio/build/airm2m_core_esp32c3/littlefs.bin \
           -o mcompass.bin
-
-   
+      - name: Get commit hash
+        id: get_commit_hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Upload merged firmware
         uses: actions/upload-artifact@v3
         with:
-          name: mcompass
+          name: mcompass-${{ env.COMMIT_HASH }}
           path: mcompass.bin
