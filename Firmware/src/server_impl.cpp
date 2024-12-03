@@ -9,11 +9,12 @@
 #include <WiFi.h>
 #include <soc/usb_serial_jtag_reg.h>
 
+#include "common.h"
 #include "func.h"
 #include "macro_def.h"
 static AsyncWebServer server(80);
 const char *PARAM_MESSAGE = "message";
-extern uint8_t compassState;
+extern CompassState deviceState;
 
 static int isPluggedUSB(void) {
   uint32_t *aa = (uint32_t *)USB_SERIAL_JTAG_FRAM_NUM_REG;
@@ -33,7 +34,7 @@ static void apis(void) {
   server.on("/setIndex", HTTP_POST, [](AsyncWebServerRequest *request) {
     if (request->hasParam("index")) {
       int index = request->getParam("index")->value().toInt();
-      compassState = STATE_SERVER_INDEX;
+      deviceState = STATE_SERVER_INDEX;
       showFrame(index);
       request->send(200, "text/plain", "OK");
     } else {
@@ -41,7 +42,7 @@ static void apis(void) {
     }
   });
   server.on("/info", HTTP_GET, [](AsyncWebServerRequest *request) {
-    compassState = STATE_SERVER_INFO;
+    deviceState = STATE_SERVER_INFO;
     String buildDate = __DATE__;
     String buildTime = __TIME__;
 #ifdef BUILD_VERSION
@@ -63,16 +64,9 @@ static void apis(void) {
                       "\",\"gitBranch\":\"" + gitBranch +
                       "\",\"gitCommit\":\"" + gitCommit + "\"}");
   });
-  server.on("/wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
-    compassState = STATE_SERVER_WIFI;
-    String ssid = WiFi.SSID();
-    String password = WiFi.psk();
-    request->send(
-        200, "text/json",
-        "{\"ssid\":\"" + ssid + "\",\"password\":\"" + password + "\"}");
-  });
+
   server.on("/spawn", HTTP_GET, [](AsyncWebServerRequest *request) {
-    compassState = STATE_SERVER_SPAWN;
+    deviceState = STATE_SERVER_SPAWN;
     Preferences preferences;
     preferences.begin("preferences", false);
     float latitude = preferences.getFloat("latitude", 0);
@@ -85,7 +79,7 @@ static void apis(void) {
   server.on("/setColor", HTTP_POST, [](AsyncWebServerRequest *request) {
     if (request->hasParam("color")) {
       String color = request->getParam("color")->value();
-      compassState = STATE_SERVER_COLORS;
+      deviceState = STATE_SERVER_COLORS;
       char *endptr;
       int hexRgb = strtol(color.c_str() + 1, &endptr, 16);
       Serial.printf("setColor to %06X\n", hexRgb);
@@ -97,7 +91,7 @@ static void apis(void) {
   server.on("/setAzimuth", HTTP_POST, [](AsyncWebServerRequest *request) {
     if (request->hasParam("azimuth")) {
       float azimuth = request->getParam("azimuth")->value().toFloat();
-      compassState = STATE_GAME_COMPASS;
+      deviceState = STATE_GAME_COMPASS;
       showFrameByAzimuth(azimuth);
       request->send(200);
     }
@@ -115,7 +109,14 @@ static void apis(void) {
       request->send(200);
     }
   });
-
+  server.on("/wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
+    deviceState = STATE_SERVER_WIFI;
+    String ssid = WiFi.SSID();
+    String password = WiFi.psk();
+    request->send(200, "text/json",
+                  "{\"ssid\":\"" + ssid + "\",\"password\":\"" + password +
+                      "\"}");
+  });
   server.on("/setWiFi", HTTP_POST, [](AsyncWebServerRequest *request) {
     if (request->hasParam("ssid") && request->hasParam("password")) {
       String ssid = request->getParam("ssid")->value();
@@ -140,7 +141,7 @@ static void localHotspot(void) {
 }
 
 static void launchServer(const char *defaultFile) {
-  if (!MDNS.begin("esp32")) {  // Set the hostname to "esp32.local"
+  if (!MDNS.begin("esp32")) { // Set the hostname to "esp32.local"
     Serial.println("Error setting up MDNS responder!");
     while (1) {
       delay(1000);
@@ -156,19 +157,20 @@ static void launchServer(const char *defaultFile) {
 
 void setupServer() {
   Serial.println("Setting up server");
-  if (isPluggedUSB() == 0) {
-    Serial.println("USB not plugged");
-    return;
-  }
-  LittleFS.begin(false, "/littlefs", 32);
+  // 获取储存的WiFi配置
   Preferences preferences;
   preferences.begin("wifi", false);
   String ssid = preferences.getString("ssid", "");
   String password = preferences.getString("password", "");
   preferences.end();
-
+  // WiFi配置不为空或者没有插入USB情况下不会启动Web服务
+  if (!ssid.isEmpty() || isPluggedUSB() == 0) {
+    Serial.println("USB not plugged, server will not launch.");
+    return;
+  }
+  LittleFS.begin(false, "/littlefs", 32);
   if (ssid.isEmpty()) {
-    compassState = STATE_HOTSPOT;
+    deviceState = STATE_HOTSPOT;
     Serial.println("No WiFi credentials found");
     localHotspot();
     launchServer("default.html");
@@ -178,12 +180,12 @@ void setupServer() {
   Serial.printf("Connecting to %s\n", ssid.c_str());
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), password.c_str());
-  compassState = STATE_CONNECT_WIFI;
+  deviceState = STATE_CONNECT_WIFI;
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  compassState = STATE_SHOW_FRAME;
+  deviceState = STATE_COMPASS;
 
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());

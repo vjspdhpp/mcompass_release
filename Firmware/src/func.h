@@ -1,14 +1,16 @@
 #pragma once
 
+#include "common.h"
+
 /// 函数声明
 /**
  * @brief 保存目标位置
  */
-void saveHomeLocation(float latitude, float longitude);
+void saveHomeLocation(Location location);
 /**
  * @brief 获取目标位置
  */
-void getHomeLocation(float &latitude, float &longitude);
+void getHomeLocation(Location &location);
 /**
  * @brief 计算方位角
  * @param latA 目标位置纬度
@@ -36,6 +38,10 @@ void displayTask(void *pvParameters);
  */
 void locationTask(void *pvParameters);
 /**
+ * @brief 按钮任务
+ */
+void buttonTask(void *pvParameters);
+/**
  * @brief 丢失方位
  */
 void lostBearing();
@@ -46,8 +52,9 @@ void theNether();
 /**
  * @brief 显示帧
  * @param index 帧索引
+ * @param overrideColor 重载颜色, 用来覆盖指针颜色, 默认红色指针
  */
-void showFrame(int index);
+void showFrame(int index, int overrideColor = 0xff1414);
 /**
  * @brief 根据方位角显示帧
  * @param azimuth 方位角 范围应当是0~360

@@ -31,19 +31,24 @@ void theNether() {
       curIndex -= 1;
     }
   }
-  if (curIndex < 0) curIndex = 27;
+  if (curIndex < 0)
+    curIndex = 27;
   if (curIndex > 27) {
     curIndex = 0;
   }
-  delay(50);
 }
 
-void showFrame(int index) {
+void showFrame(int index, int overrideColor) {
+  static uint32_t color = 0;
+  color = overrideColor;
   for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = frames[index][i];
+    // TODO("这里应该使用一个指针数据的模板来设置颜色")
+    leds[i] = frames[index][i] == 0xff1414 || frames[index][i] == 0xcb1a1a ||
+                      frames[index][i] == 0xbe1515
+                  ? color
+                  : frames[index][i];
   }
   FastLED.show();
-  delay(50);
 }
 
 void showFrameByAzimuth(float azimuth) {
@@ -162,7 +167,7 @@ static void showBouncing(int color) {
     float distance = abs(i - index);
     // Use gaussian/normal distribution formula
     float brightness = 255 * exp(-(distance * distance) /
-                                 (2 * 1.5));  // sigma=1.5 controls spread
+                                 (2 * 1.5)); // sigma=1.5 controls spread
 
     leds[indexes[i]] = color;
     // Apply calculated brightness
