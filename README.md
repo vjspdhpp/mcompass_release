@@ -28,7 +28,7 @@ PlatformIO的安装方式请自行搜索;
 
 服务端程序使用next.js. 安装好node.js后,进入Server文件夹执行`npm i`安装依赖.
 
-执行`npm run build`拷贝生成的`Server/out`文件夹内容到`Firmware/data`文件夹下,使用PlatformIO自带的`Build Filesystem Image`和`Upload Filesystem Image`指令上传到设备.
+执行`npm run build`拷贝生成的`Server/out`文件夹内容到`Firmware/data`文件夹下,使用PlatformIO自带的`Build Filesystem Image`和`Upload Filesystem Image`指令上传服务器文件到设备.
 
 ## 功能说明
 * 首次插上电脑启动会创建一个`The Lost Compass`的热点, 连接后打开浏览器输入[esp32.local](http://esp32.local), 输入WiFi和密码进行配网,配网完成后装置会重启;
@@ -52,12 +52,13 @@ path | 类型 |描述 | 参数
 /setWiFi | POST | 设置WiFi | ssid: String, password: String
 
 ## 材料说明
-* PCB板厚选择1.0mm, 黑色;
-* 面板选择1.0mm 半透黑色亚克力,无需背胶;
-* 匀光材料选择PET LGT075J,无需背胶;
-* 电池选择 213455 500MAH
+* PCB板厚选择1.0mm, 黑色阻焊, 嘉立创制作;
+* 面板立创商城制作, 参数选择1.0mm 半透黑色亚克力强遮光,无需背胶;
+* 匀光材料选择PET LGT075J, 无需背胶;
+* 电池参数 213455 500MAH
 * 滚花螺母 M2*3*3.2
 * 螺丝 M2*4 内六角
+* GPS ATGM336H 5N71模块+天线, 尺寸13.1mmx15.7mm
 
 ## 模型
 [MakerWorld](https://makerworld.com.cn/zh/models/667420#profileId-611642)
