@@ -121,6 +121,7 @@ void setup() {
         }
       },
       &button);
+  deviceState = STATE_COMPASS;
   // 插入电脑情况下会启动服务器;
   setupServer();
 }
@@ -234,7 +235,6 @@ void locationTask(void *pvParameters) {
           // 坐标有效情况下更新本地坐标
           currentLoc.latitude = static_cast<float>(gps.location.lat());
           currentLoc.longitude = static_cast<float>(gps.location.lng());
-          deviceState = STATE_COMPASS;
         } else {
 #if DEBUG_DISPLAY
           Serial.print("INVALID");
