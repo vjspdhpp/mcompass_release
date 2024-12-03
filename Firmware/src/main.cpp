@@ -163,7 +163,7 @@ void displayTask(void *pvParameters) {
 #if DEBUG_DISPLAY
         Serial.printf("Azimuth = %d\n", azimuth);
 #endif
-        showFrameByAzimuth(azimuth);
+        showFrameByAzimuth(360 - azimuth);
       }
       delay(50);
       break;
