@@ -163,17 +163,20 @@ void setupServer() {
   String ssid = preferences.getString("ssid", "");
   String password = preferences.getString("password", "");
   preferences.end();
-  // WiFi配置不为空或者没有插入USB情况下不会启动Web服务
-  if (!ssid.isEmpty() || isPluggedUSB() == 0) {
-    Serial.println("USB not plugged, server will not launch.");
-    return;
-  }
+  
   LittleFS.begin(false, "/littlefs", 32);
+  // 没有WiFi配置无条件开启热点
   if (ssid.isEmpty()) {
     deviceState = STATE_HOTSPOT;
     Serial.println("No WiFi credentials found");
     localHotspot();
     launchServer("default.html");
+    return;
+  }
+
+  // 有WiFi配置, 但是没有接入USB,不会开启后台.
+  if (isPluggedUSB() == 0) {
+    Serial.println("USB not plugged, server will not launch.");
     return;
   }
 
