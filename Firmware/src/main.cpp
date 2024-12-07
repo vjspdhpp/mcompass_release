@@ -9,7 +9,6 @@
 #include "func.h"
 #include "macro_def.h"
 
-static const char *TAG = "MAIN";
 extern CRGB leds[NUM_LEDS];
 extern QMC5883LCompass compass;
 TinyGPSPlus gps;
@@ -27,20 +26,34 @@ CompassState deviceState = CompassState::STATE_LOST_BEARING;
 CompassState lastDeviceState = CompassState::STATE_LOST_BEARING;
 // 工作模式模式
 CompassType deviceType = CompassType::LocationCompass;
-uint8_t idx = 0;
+// 用来显示特定动画的帧索引
+uint8_t animationFrameIndex = 0;
+// GPS休眠时间
+uint32_t gpsSleepInterval = 60 * 60; // 单位:秒
+
+// GPS休眠配置表
+const SleepConfig sleepConfigs[] = {
+    {10.0f, 0, true},         // 在10KM距离内，不休眠
+    {50.0f, 5 * 60, false},   // 超过50KM，休眠5分钟
+    {100.0f, 10 * 60, false}, // 超过100KM，休眠10分钟
+    {200.0f, 15 * 60, false}, // 超过200KM，休眠15分钟
+};
 
 void setup() {
   // 延时,用于一些特殊情况下能够重新烧录
   delay(800);
+  // 配置校准引脚状态
+  pinMode(CALIBRATE_PIN, INPUT_PULLUP);
+  pinMode(GPS_EN_PIN, OUTPUT);
+  digitalWrite(GPS_EN_PIN, HIGH);
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   FastLED.setBrightness(128);
   long t = millis();
-
   while (millis() - t < 2500) {
-    showFrame(idx);
-    idx++;
-    if (idx > NUM_FRAMES) {
-      idx = 0;
+    showFrame(animationFrameIndex);
+    animationFrameIndex++;
+    if (animationFrameIndex > NUM_FRAMES) {
+      animationFrameIndex = 0;
     }
     delay(30);
   }
@@ -52,10 +65,7 @@ void setup() {
   // 创建位置任务
   xTaskCreate(locationTask, "locationTask", 4096, NULL, 2, NULL);
   xTaskCreate(buttonTask, "buttonTask", 4096, NULL, 2, NULL);
-  // 配置校准引脚状态
-  pinMode(CALIBRATE_PIN, INPUT_PULLUP);
-  pinMode(GPS_EN_PIN, OUTPUT);
-  digitalWrite(GPS_EN_PIN, HIGH);
+
   // 获取目标位置
   getHomeLocation(targetLoc);
   // 初始化罗盘
@@ -169,10 +179,10 @@ void displayTask(void *pvParameters) {
       break;
     }
     case STATE_CONNECT_WIFI:
-      showFrame(idx, CRGB::Green);
-      idx++;
-      if (idx > NUM_FRAMES) {
-        idx = 0;
+      showFrame(animationFrameIndex, CRGB::Green);
+      animationFrameIndex++;
+      if (animationFrameIndex > NUM_FRAMES) {
+        animationFrameIndex = 0;
       }
       delay(30);
       break;
@@ -194,10 +204,10 @@ void displayTask(void *pvParameters) {
       break;
     }
     case STATE_HOTSPOT: {
-      showFrame(idx, CRGB::Yellow);
-      idx++;
-      if (idx > NUM_FRAMES) {
-        idx = 0;
+      showFrame(animationFrameIndex, CRGB::Yellow);
+      animationFrameIndex++;
+      if (animationFrameIndex > NUM_FRAMES) {
+        animationFrameIndex = 0;
       }
       delay(30);
       break;
@@ -215,7 +225,6 @@ void displayTask(void *pvParameters) {
  */
 void locationTask(void *pvParameters) {
   // esp_task_wdt_init(30, false);
-  // 失去GPS信号太久会回到STATE_LOST_BEARING
   while (1) {
     while (GPSSerial.available() > 0) {
       char t = GPSSerial.read();
@@ -235,52 +244,86 @@ void locationTask(void *pvParameters) {
           // 坐标有效情况下更新本地坐标
           currentLoc.latitude = static_cast<float>(gps.location.lat());
           currentLoc.longitude = static_cast<float>(gps.location.lng());
-        } else {
+          // 计算两地距离
+          double distance =
+              complexDistance(currentLoc.latitude, currentLoc.longitude,
+                              targetLoc.latitude, targetLoc.longitude);
+          Serial.printf("%f km to target.\n", distance);
+          // 获取最接近的临界值
+          float threshholdDistance = 0;
+          size_t sleepConfigSize = sizeof(sleepConfigs) / sizeof(SleepConfig);
+          for (int i = sleepConfigSize - 1; i >= 0; i--) {
+            if (distance >= sleepConfigs[i].distanceThreshold) {
+              threshholdDistance = sleepConfigs[i].distanceThreshold;
+              Serial.printf("use threshold %f km.\n", threshholdDistance);
+              break;
+            }
+          }
+          float modDistance = fmod(distance, threshholdDistance);
+          // 根据距离调整GPS休眠时间,
+          for (int i = 0; i < sleepConfigSize; i++) {
+            if (modDistance <= sleepConfigs[i].distanceThreshold) {
+              gpsSleepInterval = sleepConfigs[i].sleepInterval;
+              if (sleepConfigs[i].gpsEnable) {
+                digitalWrite(GPS_EN_PIN, LOW);
+              } else {
+                digitalWrite(GPS_EN_PIN, HIGH);
+              }
+              Serial.printf("GPS Sleep %d seconds\n", gpsSleepInterval);
+              break;
+            }
+          }
+        }
+      } else {
 #if DEBUG_DISPLAY
-          Serial.print("INVALID");
+        Serial.print("INVALID");
 #endif
-        }
-
-#if DEBUG_DISPLAY
-        Serial.print("  Date/Time: ");
-        if (gps.date.isValid()) {
-          Serial.print(gps.date.month());
-          Serial.print("/");
-          Serial.print(gps.date.day());
-          Serial.print("/");
-          Serial.print(gps.date.year());
-        } else {
-          Serial.print("INVALID");
-        }
-
-        Serial.print(" ");
-        if (gps.time.isValid()) {
-          if (gps.time.hour() < 10)
-            Serial.print("0");
-          Serial.print(gps.time.hour());
-          Serial.print(":");
-          if (gps.time.minute() < 10)
-            Serial.print("0");
-          Serial.print(gps.time.minute());
-          Serial.print(":");
-          if (gps.time.second() < 10)
-            Serial.print("0");
-          Serial.print(gps.time.second());
-          Serial.print(".");
-          if (gps.time.centisecond() < 10)
-            Serial.print("0");
-          Serial.print(gps.time.centisecond());
-        } else {
-          Serial.print("INVALID");
-        }
-        Serial.println();
-#endif
-        // Serial.println("available()");
       }
+
+#if DEBUG_DISPLAY
+      Serial.print("  Date/Time: ");
+      if (gps.date.isValid()) {
+        Serial.print(gps.date.month());
+        Serial.print("/");
+        Serial.print(gps.date.day());
+        Serial.print("/");
+        Serial.print(gps.date.year());
+      } else {
+        Serial.print("INVALID");
+      }
+
+      Serial.print(" ");
+      if (gps.time.isValid()) {
+        if (gps.time.hour() < 10)
+          Serial.print("0");
+        Serial.print(gps.time.hour());
+        Serial.print(":");
+        if (gps.time.minute() < 10)
+          Serial.print("0");
+        Serial.print(gps.time.minute());
+        Serial.print(":");
+        if (gps.time.second() < 10)
+          Serial.print("0");
+        Serial.print(gps.time.second());
+        Serial.print(".");
+        if (gps.time.centisecond() < 10)
+          Serial.print("0");
+        Serial.print(gps.time.centisecond());
+      } else {
+        Serial.print("INVALID");
+      }
+      Serial.println();
+#endif
+      // Serial.println("available()");
     }
-    esp_task_wdt_reset(); // 定期喂狗
+    if (gpsSleepInterval == 0) {
+      digitalWrite(GPS_EN_PIN, LOW);
+      gpsSleepInterval = 60 * 60;
+    } else {
+      gpsSleepInterval--;
+    }
+    // esp_task_wdt_reset(); // 定期喂狗
     delay(1000);
-    // Serial.println("No GPS data");
   }
 }
 

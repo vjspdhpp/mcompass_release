@@ -73,8 +73,8 @@ static void apis(void) {
     float longitude = preferences.getFloat("longitude", 0);
     preferences.end();
     request->send(200, "text/json",
-                  "{\"latitude\":\"" + String(latitude) +
-                      "\",\"longitude\":\"" + String(longitude) + "\"}");
+                  "{\"latitude\":\"" + String(latitude, 6) +
+                      "\",\"longitude\":\"" + String(longitude, 6) + "\"}");
   });
   server.on("/setColor", HTTP_POST, [](AsyncWebServerRequest *request) {
     if (request->hasParam("color")) {
@@ -163,7 +163,7 @@ void setupServer() {
   String ssid = preferences.getString("ssid", "");
   String password = preferences.getString("password", "");
   preferences.end();
-  
+
   LittleFS.begin(false, "/littlefs", 32);
   // 没有WiFi配置无条件开启热点
   if (ssid.isEmpty()) {

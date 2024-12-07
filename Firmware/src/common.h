@@ -1,7 +1,7 @@
 #pragma once
 
 /// @brief 罗盘状态
-typedef enum {
+enum CompassState {
   STATE_LOST_BEARING = 0,   // 丢失方位
   STATE_WAIT_GPS = 1,       // 等待GPS信号
   STATE_COMPASS = 2,        // 罗盘工作状态
@@ -13,16 +13,23 @@ typedef enum {
   STATE_SERVER_INFO,        // 网页信息选项卡激活
   STATE_GAME_COMPASS = 100, // 游戏联动罗盘中
   STATE_HOTSPOT = 200       // WiFi热点状态中
-} CompassState;
+};
 
 /// @brief 罗盘工作模式
-typedef enum {
+enum CompassType {
   LocationCompass, // 地点指针
   NorthCompass,    // 指南针
-} CompassType;
+};
 
 /// @brief 坐标
-typedef struct {
+struct Location {
   float latitude;
   float longitude;
-} Location;
+};
+
+// 定义距离阈值和对应休眠时间的结构
+struct SleepConfig {
+  float distanceThreshold; // 距离阈值(KM)
+  int sleepInterval;       // 休眠时间(秒)
+  bool gpsEnable;          // GPS启用状态, 默认开启
+};
