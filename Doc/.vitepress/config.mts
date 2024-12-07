@@ -15,7 +15,8 @@ export default defineConfig({
         items: [
           { text: 'Readme', link: '/readme' },
           { text: 'API', link: '/api' },
-          { text: '制作', link: '/make' }
+          { text: '制作', link: '/make' },
+          { text: '更新记录', link: '/update' }
         ]
       }
     ],
