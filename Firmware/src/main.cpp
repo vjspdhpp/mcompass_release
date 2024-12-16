@@ -68,6 +68,11 @@ void setup() {
 
   // 获取目标位置
   getHomeLocation(targetLoc);
+  Serial.print("targetLoc.latitude:");
+  Serial.print(targetLoc.latitude);
+  Serial.print(",targetLoc.latitude:");
+  Serial.print(targetLoc.longitude);
+  Serial.println();
   // 初始化罗盘
   compass.init();
   // 校准引脚被按下时候进行校准

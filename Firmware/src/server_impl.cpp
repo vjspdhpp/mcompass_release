@@ -67,14 +67,15 @@ static void apis(void) {
 
   server.on("/spawn", HTTP_GET, [](AsyncWebServerRequest *request) {
     deviceState = STATE_SERVER_SPAWN;
-    Preferences preferences;
-    preferences.begin("preferences", false);
-    float latitude = preferences.getFloat("latitude", 0);
-    float longitude = preferences.getFloat("longitude", 0);
-    preferences.end();
+    Location location = {
+        .latitude = 0.0f,
+        .longitude = 0.0f,
+    };
+    getHomeLocation(location);
     request->send(200, "text/json",
-                  "{\"latitude\":\"" + String(latitude, 6) +
-                      "\",\"longitude\":\"" + String(longitude, 6) + "\"}");
+                  "{\"latitude\":\"" + String(location.latitude, 6) +
+                      "\",\"longitude\":\"" + String(location.longitude, 6) +
+                      "\"}");
   });
   server.on("/setColor", HTTP_POST, [](AsyncWebServerRequest *request) {
     if (request->hasParam("color")) {
@@ -101,11 +102,8 @@ static void apis(void) {
     if (request->hasParam("latitude") && request->hasParam("longitude")) {
       float latitude = request->getParam("latitude")->value().toFloat();
       float longitude = request->getParam("longitude")->value().toFloat();
-      Preferences preferences;
-      preferences.begin("preferences", false);
-      preferences.putFloat("latitude", latitude);
-      preferences.putFloat("longitude", longitude);
-      preferences.end();
+      Location location = {.latitude = latitude, .longitude = longitude};
+      saveHomeLocation(location);
       request->send(200);
     }
   });
