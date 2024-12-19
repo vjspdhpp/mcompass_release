@@ -23,7 +23,7 @@ void theNether() {
   }
   FastLED.show();
   if (curIndex == targetIndex) {
-    targetIndex = random(0, 27);
+    targetIndex = random(0, MAX_FRAME_INDEX);
   } else {
     if (curIndex < targetIndex) {
       curIndex += 1;
@@ -32,8 +32,8 @@ void theNether() {
     }
   }
   if (curIndex < 0)
-    curIndex = 27;
-  if (curIndex > 27) {
+    curIndex = MAX_FRAME_INDEX;
+  if (curIndex > MAX_FRAME_INDEX) {
     curIndex = 0;
   }
 }
@@ -68,7 +68,7 @@ void showFrameByAzimuth(float azimuth) {
   } else if (azimuth >= 0 && azimuth < 14) {
     index = 0;
   } else {
-    index = (int)((azimuth - 14) / ((360 - 14) / 27.0)) + 1;
+    index = (int)((azimuth - 14) / ((360 - 14) / MAX_FRAME_INDEX)) + 1;
   }
   Serial.printf("showFrameByAzimuth: relative azimuth=%f, index=%d\n", azimuth,
                 index);
@@ -77,9 +77,9 @@ void showFrameByAzimuth(float azimuth) {
 
 void showFrameByBearing(float bearing, int azimuth) {
   // 当前方位角对应的索引
-  int aIndex = (int)(azimuth / 360.0 * 28.0);
+  int aIndex = (int)(azimuth / 360.0 * MAX_FRAME_INDEX);
   // 目标方位角对应的索引
-  int bIndex = (int)(bearing / 360.0 * 28.0);
+  int bIndex = (int)(bearing / 360.0 * MAX_FRAME_INDEX);
   // 计算差值
   // int index = aIndex - bIndex;
   Serial.printf("showFrameByBearing: bearing=%f azimuth=%d \n", bearing,
@@ -89,12 +89,6 @@ void showFrameByBearing(float bearing, int azimuth) {
     degree += 360;
   }
   showFrameByAzimuth(degree);
-  // if (index < 0) {
-  //   index = 28 + index;
-  // } else if (index > 27) {
-  //   index = index - 27;
-  // }
-  // showFrame(index);
 }
 
 void showFrameByLocation(float latA, float lonA, float latB, float lonB,
@@ -137,11 +131,6 @@ void showSolid(int color) {
 }
 
 void showServerColors() {
-  // for (int i = 0; i < NUM_LEDS; i++) {
-  //   leds[i] = frames[29][i];
-  // }
-  // FastLED.show();
-
   // 彩虹色
   static int hue = 0;
   fill_rainbow(leds, NUM_LEDS, hue, 1);

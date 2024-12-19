@@ -52,7 +52,7 @@ void setup() {
   while (millis() - t < 2500) {
     showFrame(animationFrameIndex);
     animationFrameIndex++;
-    if (animationFrameIndex > NUM_FRAMES) {
+    if (animationFrameIndex > MAX_FRAME_INDEX) {
       animationFrameIndex = 0;
     }
     delay(30);
@@ -186,7 +186,7 @@ void displayTask(void *pvParameters) {
     case STATE_CONNECT_WIFI:
       showFrame(animationFrameIndex, CRGB::Green);
       animationFrameIndex++;
-      if (animationFrameIndex > NUM_FRAMES) {
+      if (animationFrameIndex > MAX_FRAME_INDEX) {
         animationFrameIndex = 0;
       }
       delay(30);
@@ -211,7 +211,7 @@ void displayTask(void *pvParameters) {
     case STATE_HOTSPOT: {
       showFrame(animationFrameIndex, CRGB::Yellow);
       animationFrameIndex++;
-      if (animationFrameIndex > NUM_FRAMES) {
+      if (animationFrameIndex > MAX_FRAME_INDEX) {
         animationFrameIndex = 0;
       }
       delay(30);
