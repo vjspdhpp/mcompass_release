@@ -6,6 +6,7 @@
 
 CRGB leds[NUM_LEDS];
 
+[[deprecated]]
 void lostBearing() {
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = frames[27][i];
@@ -31,14 +32,16 @@ void theNether() {
       curIndex -= 1;
     }
   }
-  if (curIndex < 0)
+  if (curIndex < 0) {
     curIndex = MAX_FRAME_INDEX;
+  }
   if (curIndex > MAX_FRAME_INDEX) {
     curIndex = 0;
   }
 }
 
 void showFrame(int index, int overrideColor) {
+  // Serial.printf("showFrame: relative index=%f,", index);
   static uint32_t color = 0;
   color = overrideColor;
   for (int i = 0; i < NUM_LEDS; i++) {
@@ -56,20 +59,37 @@ void showFrameByAzimuth(float azimuth) {
     // 不响应不合法的方位角
     return;
   }
-  // 将方位角分为28个区间
-  // 0~14, 算作第一个区间
-  // 14~42, 算作第二个区间
-  // 42~70, 算作第三个区间
-  // ...
-  // 346~360, 算作第28个区间
+
+  // TODO 指针过冲效果实现
+
+  // 原始素材中指针的方位角不是均匀分布的
+  // 去除高度重复帧后, 得到27帧不同的图像, 其中第N张图像对应
+  // 1 正上
+  // 8 正右
+  // 14 正下
+  // 21 正右
   int index = 0;
-  if (azimuth >= 346) {
-    index = 0;
-  } else if (azimuth >= 0 && azimuth < 14) {
-    index = 0;
+  // 较小的间距
+  float step_small = 90.0 / 7.0;
+  // 间距(90°~180°)
+  float step = 90.0 / 6.0;
+  if (azimuth < step_small * 6) {
+    // 90.0 / (8 - 1)
+    index = static_cast<int>(azimuth / step_small);
+  } else if (azimuth < 90 + step * 5) {
+    // 90.0 / (14 - 8)
+    index = 7 + static_cast<int>((azimuth - 90.0) / step);
+  } else if (azimuth < 180 + step_small * 6) {
+    // 90.0 / (21 - 14)
+    index = 13 + static_cast<int>((azimuth - 180.0) / step_small);
   } else {
-    index = (int)((azimuth - 14) / ((360 - 14) / MAX_FRAME_INDEX)) + 1;
+    // 90.0 / (28 - 21)
+    index = 20 + static_cast<int>((azimuth - 270.0) / step_small);
   }
+
+  // 限制边界
+  index = min(MAX_FRAME_INDEX, index);
+  index = max(0, index);
   Serial.printf("showFrameByAzimuth: relative azimuth=%f, index=%d\n", azimuth,
                 index);
   showFrame(index);
@@ -98,6 +118,7 @@ void showFrameByLocation(float latA, float lonA, float latB, float lonB,
   showFrameByBearing(bearing, azimuth);
 }
 
+[[deprecated]]
 void showHotspot() {
   FastLED.clear();
   static int blink = 0;
@@ -111,6 +132,7 @@ void showHotspot() {
   blink = 1 - blink;
 }
 
+[[deprecated]]
 void showConnectingWifi() {
   FastLED.clear();
   static int index = 0;
@@ -130,6 +152,7 @@ void showSolid(int color) {
   FastLED.show();
 }
 
+[[deprecated]]
 void showServerColors() {
   // 彩虹色
   static int hue = 0;

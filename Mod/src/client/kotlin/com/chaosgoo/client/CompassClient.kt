@@ -41,7 +41,7 @@ class CompassClient : ClientModInitializer {
                     val pos = player.pos
                     val rawAzimuth = player.yaw % 360
                     val azimuth = if (rawAzimuth < 0) rawAzimuth + 360 else rawAzimuth
-                    player.sendMessage(
+                    /*player.sendMessage(
                         Text.of(
                             "Pos:(${"%.2f".format(pos.x)},${"%.2f".format(pos.y)},${"%.2f".format(pos.z)}), Yaw:${
                                 "%.2f".format(
@@ -50,7 +50,7 @@ class CompassClient : ClientModInitializer {
                             }"
                         ),
                         true
-                    )
+                    )*/
                     if (lastAzimuth != azimuth) {
                         setAzimuth(lastAzimuth)
                         lastAzimuth = azimuth
@@ -64,7 +64,7 @@ class CompassClient : ClientModInitializer {
         if (mutex.isLocked) return
         scope.launch {
             mutex.withLock {
-                apiService.setAzimuth(azimuth)
+                apiService.setAzimuth(360.0f - azimuth)
             }
         }
     }

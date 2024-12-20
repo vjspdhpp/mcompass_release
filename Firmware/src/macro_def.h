@@ -2,7 +2,7 @@
 
 /// Declare Macros
 #define NUM_LEDS 42
-#define MAX_FRAME_INDEX 28
+#define MAX_FRAME_INDEX 26
 
 /// 引脚定义
 #define DATA_PIN 6

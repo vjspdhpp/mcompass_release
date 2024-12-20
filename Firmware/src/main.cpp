@@ -49,6 +49,7 @@ void setup() {
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   FastLED.setBrightness(128);
   long t = millis();
+  Serial.begin(115200);
   while (millis() - t < 2500) {
     showFrame(animationFrameIndex);
     animationFrameIndex++;
@@ -57,7 +58,7 @@ void setup() {
     }
     delay(30);
   }
-  Serial.begin(115200);
+
   // 配置GPS串口
   GPSSerial.begin(9600, SERIAL_8N1, RX, TX);
   // 创建显示任务
@@ -146,11 +147,7 @@ void loop() { delay(1000); }
 void displayTask(void *pvParameters) {
   while (1) {
     switch (deviceState) {
-    case STATE_LOST_BEARING: {
-      // 校准罗盘中
-      lostBearing();
-      break;
-    }
+    case STATE_LOST_BEARING:
     case STATE_WAIT_GPS: {
       // 等待GPS数据
       theNether();
