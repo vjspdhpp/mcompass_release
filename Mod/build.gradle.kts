@@ -50,9 +50,14 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
-    modImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    modImplementation("com.squareup.okhttp3:okhttp:4.9.0")
-    modImplementation("com.squareup.retrofit2:retrofit:2.11.0")
+    modImplementation(include("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")!!)
+    modImplementation(include("com.squareup.okhttp3:okhttp:4.9.0")!!)
+    modImplementation(include("com.squareup.retrofit2:retrofit:2.11.0")!!)
+}
+
+tasks.remapJar {
+    from(sourceSets["main"].output)
+    from(sourceSets["client"].output)
 }
 
 tasks.processResources {
