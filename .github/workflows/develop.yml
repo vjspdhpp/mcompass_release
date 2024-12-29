@@ -1,4 +1,4 @@
-name: Build Firmware Workflow
+name: Build Development Firmware Workflow
 
 on:
   push:
