@@ -11,3 +11,5 @@
 
 // 调试输出控制宏
 #define DEBUG_DISPLAY 0
+
+#define DEFAULT_NEEDLE_COLOR 0xff1414

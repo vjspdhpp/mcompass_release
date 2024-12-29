@@ -110,3 +110,28 @@ void showServerInfo();
  * @brief 初始化服务器相关
  */
 void setupServer();
+
+/**
+ * @brief 关闭本地网页服务
+ */
+void endWebServer();
+
+/**
+ * @brief 是否可以关闭网页服务
+ */
+bool shouldStopServer();
+
+/**
+ * @brief 初始化蓝牙
+ */
+void initBleServer();
+
+/**
+ * @brief 开启热点
+ */
+void localHotspot(const char *ssid = "The Lost Compass");
+
+/**
+ * @brief 关闭热点
+ */
+void stopHotspot();

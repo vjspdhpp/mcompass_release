@@ -33,7 +33,7 @@ PlatformIO的安装方式请自行搜索;
 ## 功能说明
 * 首次插上电脑启动会创建一个`The Lost Compass`的热点, 连接后打开浏览器输入[esp32.local](http://esp32.local), 输入WiFi和密码进行配网,配网完成后装置会重启;
 * 当罗盘插上电脑后开机, 此时会启动后台服务, 使用[esp32.local](http://esp32.local)访问后台;
-* 开机后显示彩虹图案时按住按钮会进入罗盘校准模式, 请举着罗盘飞来飞去, 尽可能多的让罗盘在各个方向旋转.
+* 开机后显示白色指针时按住按钮会进入校准模式(校准时候会观察到指针持续10秒卡住), 请举着罗盘飞来飞去, 尽可能多的让罗盘在各个方向旋转.
 * 在室外开阔环境下才能够有GPS信号, 没有GPS信号指针会乱转的.
 * 在有GPS信号的情况下, 长按按钮可以设置当前地点为新的出生点.
 
@@ -41,7 +41,8 @@ PlatformIO的安装方式请自行搜索;
 path | 类型 |描述 | 参数
 -|-|-|-
 /ip | GET | 获取当前设备IP | 无
-/setIndex | POST |调试用, 直接显示第N帧 | index: Int
+/restart | HTTP_POST | 重启 | 无
+/setIndex | POST |调试用, 直接显示第N帧, 指针颜色color | index: Int, color: String, eg: #ff5252
 /info | GET |获取设备基本信息 | 无
 /wifi | GET |获取设备保存的WiFi | 无
 /wifi | GET |获取设备保存的WiFi | 无

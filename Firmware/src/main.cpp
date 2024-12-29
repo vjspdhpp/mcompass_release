@@ -1,4 +1,5 @@
 #include <FastLED.h>
+#include <NimBLEDevice.h>
 #include <OneButton.h>
 #include <Preferences.h>
 #include <QMC5883LCompass.h>
@@ -14,13 +15,11 @@ extern QMC5883LCompass compass;
 TinyGPSPlus gps;
 HardwareSerial GPSSerial(0);
 OneButton button(CALIBRATE_PIN, true);
-
+NimBLEServer *pServer;
 // 目标位置
 Location targetLoc = {.latitude = 43.0f, .longitude = 126.0f};
-
 // 当前位置
 Location currentLoc = {.latitude = 1000.0f, .longitude = 1000.0f};
-
 // 状态
 CompassState deviceState = CompassState::STATE_LOST_BEARING;
 CompassState lastDeviceState = CompassState::STATE_LOST_BEARING;
@@ -30,7 +29,12 @@ CompassType deviceType = CompassType::LocationCompass;
 uint8_t animationFrameIndex = 0;
 // GPS休眠时间
 uint32_t gpsSleepInterval = 60 * 60; // 单位:秒
-
+// 是否有GPS
+bool hasGPS = false;
+// 超时检测计数器
+uint32_t serverTimeoutCount = 0;
+// 定位任务Handle
+TaskHandle_t gpsTask = NULL;
 // GPS休眠配置表
 const SleepConfig sleepConfigs[] = {
     {10.0f, 0, true},         // 在10KM距离内，不休眠
@@ -38,10 +42,12 @@ const SleepConfig sleepConfigs[] = {
     {100.0f, 10 * 60, false}, // 超过100KM，休眠10分钟
     {200.0f, 15 * 60, false}, // 超过200KM，休眠15分钟
 };
+// 强制进入下界
+bool forceTheNether = false;
 
 void setup() {
   // 延时,用于一些特殊情况下能够重新烧录
-  delay(800);
+  delay(1500);
   // 配置校准引脚状态
   pinMode(CALIBRATE_PIN, INPUT_PULLUP);
   pinMode(GPS_EN_PIN, OUTPUT);
@@ -50,21 +56,39 @@ void setup() {
   FastLED.setBrightness(128);
   long t = millis();
   Serial.begin(115200);
+  // 配置GPS串口
+  GPSSerial.begin(9600, SERIAL_8N1, RX, TX);
+  // 启动GPS,用于GPS存在性检测
+  digitalWrite(GPS_EN_PIN, LOW);
+  bool calibrate = false;
   while (millis() - t < 2500) {
-    showFrame(animationFrameIndex);
+    showFrame(animationFrameIndex, 0xFFFFFF);
     animationFrameIndex++;
     if (animationFrameIndex > MAX_FRAME_INDEX) {
       animationFrameIndex = 0;
     }
     delay(30);
+    // 启动时候检测到按下随后进入校准
+    if (digitalRead(CALIBRATE_PIN) == LOW) {
+      calibrate = true;
+    }
+    // 检查在此期间有没有GPS串口数据来判断GPS模块是否接入
+    if (GPSSerial.available() > 0) {
+      hasGPS = true;
+    }
+  }
+  if (hasGPS) {
+    Serial.printf("Find GPS Module!\n");
+  } else {
+    // 没有GPS的话会默认进入指南模式
+    deviceType = CompassType::NorthCompass;
+    Serial.printf("GPS Module Not Found!\n");
   }
 
-  // 配置GPS串口
-  GPSSerial.begin(9600, SERIAL_8N1, RX, TX);
   // 创建显示任务
   xTaskCreate(displayTask, "displayTask", 4096, NULL, 2, NULL);
   // 创建位置任务
-  xTaskCreate(locationTask, "locationTask", 4096, NULL, 2, NULL);
+  xTaskCreate(locationTask, "locationTask", 4096, NULL, 2, &gpsTask);
   xTaskCreate(buttonTask, "buttonTask", 4096, NULL, 2, NULL);
 
   // 获取目标位置
@@ -77,11 +101,10 @@ void setup() {
   // 初始化罗盘
   compass.init();
   // 校准引脚被按下时候进行校准
-  if (digitalRead(CALIBRATE_PIN) == LOW) {
+  if (calibrate) {
     calibrateCompass();
   }
-  // 结束校准阶段, 开启GPS, 等待GPS信号
-  digitalWrite(GPS_EN_PIN, LOW);
+
   deviceState = STATE_WAIT_GPS;
   button.attachClick(
       [](void *scope) {
@@ -108,15 +131,20 @@ void setup() {
       [](void *scope) {
         switch (deviceState) {
         case CompassState::STATE_COMPASS: {
-          // 设置当前地点为Home
-          // 检查GPS状态
-          if (currentLoc.latitude < 500.0f) {
-            saveHomeLocation(currentLoc);
-            targetLoc.latitude = currentLoc.latitude;
-            targetLoc.longitude = currentLoc.longitude;
-            Serial.println("Set Home");
+          if (deviceType == CompassType::LocationCompass) {
+            // 设置当前地点为Home
+            // 检查GPS状态
+            if (currentLoc.latitude < 500.0f) {
+              saveHomeLocation(currentLoc);
+              targetLoc.latitude = currentLoc.latitude;
+              targetLoc.longitude = currentLoc.longitude;
+              Serial.println("Set Home");
+            } else {
+              Serial.println("Can't set home");
+            }
           } else {
-            Serial.println("Can't set home");
+            // 指南针模式下长按切换到theNether
+            forceTheNether = !forceTheNether;
           }
           break;
         }
@@ -138,11 +166,25 @@ void setup() {
       },
       &button);
   deviceState = STATE_COMPASS;
-  // 插入电脑情况下会启动服务器;
   setupServer();
 }
 
-void loop() { delay(1000); }
+void loop() {
+  delay(1000);
+  if (millis() > 2 * 60 * 1000L && shouldStopServer()) {
+    // 关闭本地网页服务
+    endWebServer();
+  }
+  // 启动后60秒内没有检测到GPS模块, 关闭GPS的TASK
+  if (millis() > 60 * 1000L && !hasGPS) {
+    if (gpsTask != NULL) {
+      Serial.printf("Delete GPS Task\n");
+      vTaskDelete(gpsTask);
+      gpsTask = NULL;
+    }
+  }
+  serverTimeoutCount++;
+}
 
 void displayTask(void *pvParameters) {
   while (1) {
@@ -175,7 +217,11 @@ void displayTask(void *pvParameters) {
 #if DEBUG_DISPLAY
         Serial.printf("Azimuth = %d\n", azimuth);
 #endif
-        showFrameByAzimuth(360 - azimuth);
+        if (forceTheNether) {
+          theNether();
+        } else {
+          showFrameByAzimuth(360 - azimuth);
+        }
       }
       delay(50);
       break;
@@ -234,6 +280,8 @@ void locationTask(void *pvParameters) {
       Serial.print(t);
 #endif
       if (gps.encode(t)) {
+        // 有效的GPS编码数据
+        hasGPS = true;
 #if DEBUG_DISPLAY
         Serial.print("Location: ");
 #endif

@@ -46,7 +46,7 @@ void showFrame(int index, int overrideColor) {
   color = overrideColor;
   for (int i = 0; i < NUM_LEDS; i++) {
     // TODO("这里应该使用一个指针数据的模板来设置颜色")
-    leds[i] = frames[index][i] == 0xff1414 || frames[index][i] == 0xcb1a1a ||
+    leds[i] = frames[index][i] == DEFAULT_NEEDLE_COLOR || frames[index][i] == 0xcb1a1a ||
                       frames[index][i] == 0xbe1515
                   ? color
                   : frames[index][i];
@@ -90,8 +90,8 @@ void showFrameByAzimuth(float azimuth) {
   // 限制边界
   index = min(MAX_FRAME_INDEX, index);
   index = max(0, index);
-  Serial.printf("showFrameByAzimuth: relative azimuth=%f, index=%d\n", azimuth,
-                index);
+  // Serial.printf("showFrameByAzimuth: relative azimuth=%f, index=%d\n", azimuth,
+  //               index);
   showFrame(index);
 }
 
